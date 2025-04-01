@@ -135,5 +135,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-- Built as a capstone project idea for a no-cost, web-based barangay management system.
+- Built as a test capstone project idea for a no-cost, web-based barangay management system.
 - Powered by [Firebase](https://firebase.google.com/) and [Tailwind CSS](https://tailwindcss.com/).
