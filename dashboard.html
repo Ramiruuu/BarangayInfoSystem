@@ -1,1 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resident Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6">Resident Dashboard</h1>
+        <a href="logout.html" class="text-red-500">Logout</a>
 
+        <!-- Announcements -->
+        <h2 class="text-2xl font-semibold mt-6 mb-4">Announcements</h2>
+        <div id="announcements"></div>
+
+        <!-- Document Request Form -->
+        <h2 class="text-2xl font-semibold mt-6 mb-4">Request Document</h2>
+        <form id="docRequestForm">
+            <select id="document_type" class="w-full p-2 mb-4 border rounded">
+                <option value="clearance">Barangay Clearance</option>
+                <option value="permit">Business Permit</option>
+            </select>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Submit Request</button>
+        </form>
+
+        <!-- Incident Report Form -->
+        <h2 class="text-2xl font-semibold mt-6 mb-4">Report Incident</h2>
+        <form id="incidentForm">
+            <textarea id="description" placeholder="Describe the incident" class="w-full p-2 mb-4 border rounded" required></textarea>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Submit Report</button>
+        </form>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script>
+        // Load Announcements
+        db.collection('announcements').orderBy('created_at', 'desc').onSnapshot((snapshot) => {
+            const announcementsDiv = document.getElementById('announcements');
+            announcementsDiv.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const ann = doc.data();
+                announcementsDiv.innerHTML += `
+                    <div class="bg-white p-4 mb-4 rounded shadow">
+                        <h3 class="text-xl font-bold">${ann.title}</h3>
+                        <p>${ann.content}</p>
+                        <p class="text-gray-500 text-sm">${new Date(ann.created_at.toDate()).toLocaleString()}</p>
+                    </div>`;
+            });
+        });
+
+        // Document Request
+        document.getElementById('docRequestForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('document_requests').add({
+                    user_id: user.uid,
+                    document_type: document.getElementById('document_type').value,
+                    status: 'pending',
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => alert('Document request submitted!'));
+            }
+        });
+
+        // Incident Report
+        document.getElementById('incidentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('incidents').add({
+                    user_id: user.uid,
+                    description: document.getElementById('description').value,
+                    status: 'open',
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => alert('Incident reported!'));
+            }
+        });
+    </script>
+</body>
+</html>
